@@ -248,7 +248,9 @@ body{background:linear-gradient(175deg,#EEF2FF 0%,#FDF2F8 28%,#F0FDF4 55%,#FFFBE
 <script>
 // ── Config ────────────────────────────────────────────────
 // Change this to your deployed backend URL, e.g. https://your-api.railway.app
-const API_BASE = 'http://localhost:3001';
+// Auto-detect API base: same-origin when served by backend, localhost when on GitHub Pages
+const IS_BACKEND = window.location.port === '3001';
+const API_BASE = IS_BACKEND ? '' : 'http://localhost:3001';
 
 const TOTAL_SECONDS = 600;
 const LETTERS = ['A','B','C','D'];

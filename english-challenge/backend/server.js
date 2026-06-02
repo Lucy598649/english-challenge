@@ -12,6 +12,9 @@ const DB_FILE = path.join(__dirname, 'data', 'submissions.json');
 app.use(cors());
 app.use(express.json());
 
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 // ── helpers ──────────────────────────────────────────────
 function readDB() {
   if (!fs.existsSync(DB_FILE)) return [];
