@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:title" content="WPS 英语挑战赛">
+<meta property="og:description" content="30道题挑战你的英语实力，冲击排行榜！">
+<title>WPS 英语挑战赛</title>
+<style>
+:root{
+  --bg:#0B0F1A;--surface:#131929;--card:#1C2438;--border:#2A3550;
+  --accent:#4F8EF7;--accent2:#7B5EF7;--gold:#F5A623;--green:#3DD68C;--red:#F56565;
+  --text:#EDF2FF;--muted:#7B8AB4;--sm:13px;--base:15px;--lg:17px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'PingFang SC','Helvetica Neue',Arial,sans-serif;min-height:100vh;font-size:var(--base);-webkit-font-smoothing:antialiased}
+.page{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:88px;position:relative}
+
+/* ── Particles bg ── */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.p{position:absolute;border-radius:50%;opacity:.18;animation:float linear infinite}
+@keyframes float{0%{transform:translateY(100vh) scale(0)}100%{transform:translateY(-10px) scale(1)}}
+
+/* ── Sticky header ── */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(11,15,26,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 16px}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:14px;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.timer-chip{display:flex;align-items:center;gap:5px;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);border-radius:20px;padding:3px 10px;font-size:13px;font-weight:700;color:var(--gold)}
+.timer-chip.urgent{background:rgba(245,101,101,.15);border-color:rgba(245,101,101,.4);color:var(--red);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.prog-bar{height:2px;background:var(--border);margin-top:8px;border-radius:1px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:1px;transition:width .4s}
+
+/* ── Screen system ── */
+.screen{display:none;position:relative;z-index:1}
+.screen.active{display:block}
+
+/* ── Start screen ── */
+.hero{padding:32px 20px 20px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.25);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--accent);margin-bottom:16px}
+.hero-title{font-size:28px;font-weight:800;line-height:1.2;margin-bottom:8px;background:linear-gradient(135deg,#fff 0%,#a8c4ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.info-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.info-cell{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center}
+.info-val{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.info-lbl{font-size:11px;color:var(--muted);margin-top:3px}
+.cat-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:28px}
+.cat-tag{padding:4px 10px;border-radius:10px;font-size:12px;font-weight:500}
+.ct-vocab{background:rgba(79,142,247,.15);color:#7BB3FF;border:1px solid rgba(79,142,247,.2)}
+.ct-gram{background:rgba(123,94,247,.15);color:#A68EFF;border:1px solid rgba(123,94,247,.2)}
+.ct-cult{background:rgba(245,166,35,.15);color:#FFD285;border:1px solid rgba(245,166,35,.2)}
+.ct-read{background:rgba(61,214,140,.15);color:#6FE6A9;border:1px solid rgba(61,214,140,.2)}
+
+/* Nickname input */
+.input-wrap{margin:0 0 16px;position:relative}
+.nick-input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:16px;color:var(--text);font-family:inherit;outline:none;transition:border-color .2s}
+.nick-input::placeholder{color:var(--muted)}
+.nick-input:focus{border-color:var(--accent)}
+
+/* Buttons */
+.btn{width:100%;height:52px;border-radius:14px;border:none;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 24px rgba(79,142,247,.35)}
+.btn-ghost{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.btn-sm{height:40px;font-size:14px;border-radius:10px}
+
+/* ── Quiz screen ── */
+.q-nav{display:flex;flex-wrap:wrap;gap:4px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.q-dot{width:22px;height:22px;border-radius:6px;background:var(--border);font-size:10px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;border:none}
+.q-dot.done{background:rgba(79,142,247,.25);color:var(--accent)}
+.q-dot.cur{background:var(--accent);color:#fff}
+.q-card{background:var(--card);margin:10px 12px;border-radius:14px;padding:18px;border:1px solid var(--border)}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.q-num-badge{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));font-size:12px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.q-cat{font-size:11px;padding:2px 8px;border-radius:8px;font-weight:600}
+.q-pts{margin-left:auto;font-size:12px;color:var(--muted)}
+.q-text{font-size:15px;line-height:1.65;color:var(--text);margin-bottom:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .18s;user-select:none;-webkit-user-select:none}
+.opt:active{transform:scale(.99)}
+.opt.sel{border-color:var(--accent);background:rgba(79,142,247,.1)}
+.opt.ok{border-color:var(--green);background:rgba(61,214,140,.1)}
+.opt.err{border-color:var(--red);background:rgba(245,101,101,.1)}
+.opt-letter{width:26px;height:26px;border-radius:8px;background:var(--border);font-size:12px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s}
+.opt.sel .opt-letter{background:var(--accent);color:#fff}
+.opt.ok .opt-letter{background:var(--green);color:#fff}
+.opt.err .opt-letter{background:var(--red);color:#fff}
+.opt-text{font-size:14px;color:var(--text);line-height:1.4}
+
+/* Bottom fixed bar */
+.bottom-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(11,15,26,.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;z-index:100}
+
+/* ── Result screen ── */
+.result-hero{padding:28px 20px 16px;text-align:center}
+.score-ring{width:130px;height:130px;border-radius:50%;margin:0 auto 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;border:3px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,var(--accent),var(--accent2)) border-box}
+.score-big{font-size:38px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.score-of{font-size:13px;color:var(--muted)}
+.rank-title{font-size:20px;font-weight:800;margin-bottom:4px}
+.rank-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 12px 16px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+.stat-v{font-size:22px;font-weight:800}
+.stat-l{font-size:11px;color:var(--muted);margin-top:2px}
+.result-detail{padding:0 12px}
+.detail-title{font-size:13px;color:var(--muted);font-weight:600;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase}
+.det-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px}
+.det-meta{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.det-q{font-size:14px;line-height:1.55;margin-bottom:10px}
+.det-opts{display:flex;flex-direction:column;gap:6px}
+.det-opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px}
+.det-opt.ok{border-color:var(--green);background:rgba(61,214,140,.08)}
+.det-opt.err{border-color:var(--red);background:rgba(245,101,101,.08)}
+.det-letter{width:22px;height:22px;border-radius:6px;background:var(--border);font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.det-opt.ok .det-letter{background:var(--green);color:#fff}
+.det-opt.err .det-letter{background:var(--red);color:#fff}
+
+/* ── Leaderboard screen ── */
+.lb-wrap{padding:16px 12px}
+.lb-podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;align-items:end}
+.pod{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+.pod.first{border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.06);order:-1;padding-top:18px}
+.pod.second{order:-2}
+.pod.third{order:0}
+.pod-rank{font-size:20px;margin-bottom:4px}
+.pod-name{font-size:12px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod-score{font-size:18px;font-weight:800;color:var(--accent);margin-top:4px}
+.pod-title{font-size:10px;color:var(--muted);margin-top:2px}
+.lb-list{}
+.lb-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
+.lb-rank{width:24px;font-size:13px;font-weight:700;color:var(--muted);text-align:center;flex-shrink:0}
+.lb-name{flex:1;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-badge{font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(79,142,247,.15);color:var(--accent);font-weight:600;flex-shrink:0}
+.lb-score{font-size:16px;font-weight:800;color:var(--accent);flex-shrink:0}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+
+/* ── Toast ── */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 18px;font-size:14px;z-index:999;pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{opacity:1}
+
+/* ── Tab bar ── */
+.tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(11,15,26,.96);border-top:1px solid var(--border);display:flex;z-index:200;backdrop-filter:blur(12px)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;cursor:pointer;gap:3px;border:none;background:transparent;color:var(--muted);transition:color .2s;font-size:10px;font-weight:600}
+.tab.active{color:var(--accent)}
+.tab svg{width:20px;height:20px}
+
+/* Animations */
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.q-card{animation:slideUp .25s ease}
+.anim-in{animation:slideUp .3s ease}
+
+/* Loading spinner */
+.spin{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:rotate .8s linear infinite;margin:40px auto;display:block}
+@keyframes rotate{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════ START SCREEN ═══════════════════════════════ -->
+<div class="page screen active" id="screen-start">
+  <div class="hero">
+    <div class="hero-badge">🏆 WPS 英语挑战赛</div>
+    <div class="hero-title">挑战你的<br>英语实力</div>
+    <div class="hero-sub">30道精选题，覆盖词汇、语法、文化与阅读<br>登上排行榜，展示你的英语水平</div>
+    <div class="info-strip">
+      <div class="info-cell"><div class="info-val">30</div><div class="info-lbl">题目</div></div>
+      <div class="info-cell"><div class="info-val">30</div><div class="info-lbl">满分</div></div>
+      <div class="info-cell"><div class="info-val">10<span style="font-size:14px">分</span></div><div class="info-lbl">时间</div></div>
+    </div>
+    <div class="cat-row">
+      <span class="cat-tag ct-vocab">📚 词汇 11题</span>
+      <span class="cat-tag ct-gram">✏️ 语法 10题</span>
+      <span class="cat-tag ct-cult">🌍 文化 5题</span>
+      <span class="cat-tag ct-read">📖 阅读 4题</span>
+    </div>
+    <div class="input-wrap">
+      <input class="nick-input" id="nick-input" placeholder="输入你的昵称开始挑战…" maxlength="20">
+    </div>
+    <button class="btn btn-primary" id="btn-start">开始挑战 🚀</button>
+    <div style="margin-top:12px">
+      <button class="btn btn-ghost btn-sm" id="btn-to-lb" style="width:auto;padding:0 20px">查看排行榜</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ QUIZ SCREEN ═══════════════════════════════ -->
+<div class="page screen" id="screen-quiz">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">WPS 英语挑战赛</div>
+      <div class="timer-chip" id="timer-chip">⏱ <span id="timer-val">10:00</span></div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="q-nav" id="q-nav"></div>
+  <div id="q-container"></div>
+  <div class="bottom-bar">
+    <button class="btn btn-ghost btn-sm" id="btn-prev" style="width:80px">← 上一题</button>
+    <button class="btn btn-primary btn-sm" id="btn-next" style="flex:1">下一题 →</button>
+    <button class="btn btn-ghost btn-sm" id="btn-finish" style="width:80px;display:none;border-color:#F5A623;color:#F5A623">交卷 ✓</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ RESULT SCREEN ═══════════════════════════════ -->
+<div class="page screen" id="screen-result">
+  <div class="result-hero" id="result-hero"></div>
+  <div class="stat-grid" id="stat-grid"></div>
+  <div class="result-detail" id="result-detail"></div>
+  <div style="padding:0 12px 16px;display:flex;gap:8px">
+    <button class="btn btn-ghost btn-sm" style="flex:1" id="btn-retry">再挑战一次</button>
+    <button class="btn btn-primary btn-sm" style="flex:1" id="btn-to-lb2">查看排行榜</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LEADERBOARD SCREEN ══════════════════════════ -->
+<div class="page screen" id="screen-lb">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">🏆 排行榜</div>
+      <button class="btn btn-ghost btn-sm" id="btn-lb-back" style="width:auto;padding:0 12px;height:32px;font-size:13px">← 返回</button>
+    </div>
+  </div>
+  <div class="lb-wrap" id="lb-content"><span class="spin"></span></div>
+</div>
+
+<!-- Tab bar (only on result + lb screens) -->
+<div class="tab-bar" id="tab-bar" style="display:none">
+  <button class="tab" id="tab-home" onclick="showScreen('start')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>首页
+  </button>
+  <button class="tab active" id="tab-result" onclick="showScreen('result')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>成绩
+  </button>
+  <button class="tab" id="tab-lb" onclick="loadLeaderboard();showScreen('lb')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>排行榜
+  </button>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────
+// Change this to your deployed backend URL, e.g. https://your-api.railway.app
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:3001'
+  : 'https://your-api.railway.app'; // <-- replace after deploy
+
+const TOTAL_SECONDS = 600;
+const LETTERS = ['A','B','C','D'];
+
+// ── State ─────────────────────────────────────────────────
+let state = {
+  questions: [],
+  answers: {},
+  nickname: '',
+  currentQ: 0,
+  secondsLeft: TOTAL_SECONDS,
+  timer: null,
+  result: null,
+};
+
+// ── Particles ─────────────────────────────────────────────
+(function(){
+  const c=document.getElementById('particles');
+  for(let i=0;i<18;i++){
+    const d=document.createElement('div');
+    const size=Math.random()*4+2;
+    d.className='p';
+    d.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;background:hsl(${210+Math.random()*40},70%,70%);animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*8}s`;
+    c.appendChild(d);
+  }
+})();
+
+// ── Helpers ───────────────────────────────────────────────
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  const tb=document.getElementById('tab-bar');
+  tb.style.display=(name==='result'||name==='lb')?'flex':'none';
+  if(name==='result'){document.getElementById('tab-result').classList.add('active');document.getElementById('tab-lb').classList.remove('active');}
+  if(name==='lb'){document.getElementById('tab-lb').classList.add('active');document.getElementById('tab-result').classList.remove('active');}
+  window.scrollTo(0,0);
+}
+function catClass(cat){return{词汇:'ct-vocab',语法:'ct-gram',文化:'ct-cult',阅读:'ct-read'}[cat]||'ct-vocab'}
+function catIcon(cat){return{词汇:'📚',语法:'✏️',文化:'🌍',阅读:'📖'}[cat]||'📚'}
+function rankInfo(score){
+  if(score===30)return{title:'英语王者',emoji:'👑',color:'var(--gold)'};
+  if(score>=25)return{title:'英语达人',emoji:'🌟',color:'var(--accent2)'};
+  if(score>=20)return{title:'英语高手',emoji:'💪',color:'var(--accent)'};
+  if(score>=15)return{title:'英语学徒',emoji:'📚',color:'var(--green)'};
+  return{title:'英语新手',emoji:'🌱',color:'var(--muted)'};
+}
+
+// ── Load questions ─────────────────────────────────────────
+async function loadQuestions(){
+  try{
+    const r=await fetch(API_BASE+'/api/questions');
+    state.questions=await r.json();
+  } catch(e){
+    // Fallback: embedded questions (works without backend)
+    state.questions=FALLBACK_QUESTIONS;
+    console.warn('API unavailable, using embedded questions');
+  }
+}
+
+// ── Start quiz ─────────────────────────────────────────────
+async function startQuiz(){
+  const nick=document.getElementById('nick-input').value.trim();
+  if(!nick){showToast('请先输入昵称 😊');return;}
+  state.nickname=nick;
+  state.answers={};
+  state.currentQ=0;
+  state.secondsLeft=TOTAL_SECONDS;
+  state.result=null;
+
+  if(!state.questions.length) await loadQuestions();
+
+  showScreen('quiz');
+  renderNav();
+  renderQuestion();
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(state.timer);
+  state.timer=setInterval(()=>{
+    state.secondsLeft--;
+    const el=document.getElementById('timer-val');
+    if(el) el.textContent=fmt(state.secondsLeft);
+    const chip=document.getElementById('timer-chip');
+    if(state.secondsLeft<=60 && chip) chip.classList.add('urgent');
+    if(state.secondsLeft<=0){clearInterval(state.timer);submitQuiz();}
+  },1000);
+}
+
+// ── Render nav dots ────────────────────────────────────────
+function renderNav(){
+  const nav=document.getElementById('q-nav');
+  nav.innerHTML=state.questions.map((q,i)=>{
+    const done=state.answers[i]!==undefined;
+    const cur=i===state.currentQ;
+    return `<button class="q-dot${cur?' cur':done?' done':''}" onclick="goTo(${i})">${i+1}</button>`;
+  }).join('');
+}
+
+// ── Render current question ────────────────────────────────
+function renderQuestion(){
+  const q=state.questions[state.currentQ];
+  const i=state.currentQ;
+  const ans=state.answers[i];
+  const pct=Math.round(Object.keys(state.answers).length/state.questions.length*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+
+  // bottom bar
+  const btnPrev=document.getElementById('btn-prev');
+  const btnNext=document.getElementById('btn-next');
+  const btnFinish=document.getElementById('btn-finish');
+  btnPrev.style.display=i===0?'none':'block';
+  const isLast=i===state.questions.length-1;
+  btnNext.style.display=isLast?'none':'block';
+  btnFinish.style.display=isLast?'block':'none';
+
+  document.getElementById('q-container').innerHTML=`
+    <div class="q-card">
+      <div class="q-meta">
+        <div class="q-num-badge">${i+1}</div>
+        <span class="cat-tag ${catClass(q.category)}">${catIcon(q.category)} ${q.category}</span>
+        <span class="q-pts">1分</span>
+      </div>
+      <div class="q-text">${q.question}</div>
+      <div class="opts">
+        ${q.options.map((o,oi)=>`
+          <div class="opt${ans===LETTERS[oi]?' sel':''}" onclick="selectOpt(${i},${oi})">
+            <div class="opt-letter">${LETTERS[oi]}</div>
+            <div class="opt-text">${o}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function selectOpt(qi,oi){
+  state.answers[qi]=LETTERS[oi];
+  renderNav();
+  renderQuestion();
+}
+function goTo(i){state.currentQ=i;renderNav();renderQuestion();}
+
+// ── Submit ─────────────────────────────────────────────────
+async function submitQuiz(){
+  clearInterval(state.timer);
+  const payload={nickname:state.nickname,answers:{}};
+  state.questions.forEach((q,i)=>{payload.answers[q.id]=state.answers[i]||null;});
+
+  try{
+    const r=await fetch(API_BASE+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    state.result=await r.json();
+  } catch(e){
+    // offline scoring
+    const score=state.questions.reduce((s,q,i)=>{
+      const userAns=state.answers[i];
+      // We don't have answers client-side, so show 0 with note
+      return s;
+    },0);
+    state.result={score:0,rank:'英语新手',total:30,detail:[],offline:true};
+  }
+  renderResult();
+  showScreen('result');
+  document.getElementById('tab-bar').style.display='flex';
+}
+
+// ── Render result ──────────────────────────────────────────
+function renderResult(){
+  const r=state.result;
+  if(!r)return;
+  const ri=rankInfo(r.score);
+  const correct=r.detail.filter(d=>d.isCorrect).length;
+  const wrong=r.detail.filter(d=>!d.isCorrect&&d.submitted).length;
+  const skipped=r.detail.filter(d=>!d.submitted).length;
+
+  document.getElementById('result-hero').innerHTML=`
+    <div class="score-ring">
+      <div class="score-big">${r.score}</div>
+      <div class="score-of">/ ${r.total} 分</div>
+    </div>
+    <div class="rank-title" style="color:${ri.color}">${ri.emoji} ${ri.title}</div>
+    <div class="rank-sub">${state.nickname} · 得分率 ${Math.round(r.score/r.total*100)}%</div>`;
+
+  document.getElementById('stat-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-v" style="color:var(--green)">${correct}</div><div class="stat-l">答对</div></div>
+    <div class="stat-card"><div class="stat-v" style="color:var(--red)">${wrong}</div><div class="stat-l">答错</div></div>
+    <div class="stat-card"><div class="stat-v" style="color:var(--muted)">${skipped}</div><div class="stat-l">未答</div></div>`;
+
+  if(!r.detail||!r.detail.length){
+    document.getElementById('result-detail').innerHTML='<div class="empty">详细解析需联网查看</div>';
+    return;
+  }
+
+  document.getElementById('result-detail').innerHTML=`
+    <div class="detail-title">答题详情</div>
+    ${r.detail.map((d,i)=>{
+      const q=state.questions[i];
+      if(!q)return'';
+      return`<div class="det-item anim-in">
+        <div class="det-meta">
+          <div class="q-num-badge" style="background:${d.isCorrect?'var(--green)':d.submitted?'var(--red)':'var(--muted)'}">${i+1}</div>
+          <span class="cat-tag ${catClass(q.category)}">${q.category}</span>
+          <span style="margin-left:auto;font-size:12px;color:${d.isCorrect?'var(--green)':d.submitted?'var(--red)':'var(--muted)'}">${d.isCorrect?'✓ +1分':d.submitted?'✗ 0分':'— 未答'}</span>
+        </div>
+        <div class="det-q">${q.question}</div>
+        <div class="det-opts">
+          ${q.options.map((o,oi)=>{
+            const L=LETTERS[oi];
+            const isCorrect=L===d.correct;
+            const isUser=L===d.submitted;
+            let cls='det-opt';
+            if(isCorrect)cls+=' ok';
+            else if(isUser&&!isCorrect)cls+=' err';
+            return`<div class="${cls}">
+              <div class="det-letter">${L}</div>
+              <span style="font-size:13px;flex:1">${o}</span>
+              ${isCorrect?'<span style="font-size:11px;color:var(--green)">✓ 正确答案</span>':''}
+              ${isUser&&!isCorrect?'<span style="font-size:11px;color:var(--red)">✗ 你的答案</span>':''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ── Leaderboard ────────────────────────────────────────────
+async function loadLeaderboard(){
+  document.getElementById('lb-content').innerHTML='<span class="spin"></span>';
+  try{
+    const [lb,stats]=await Promise.all([
+      fetch(API_BASE+'/api/leaderboard').then(r=>r.json()),
+      fetch(API_BASE+'/api/stats').then(r=>r.json()),
+    ]);
+    renderLeaderboard(lb,stats);
+  } catch(e){
+    document.getElementById('lb-content').innerHTML='<div class="empty">⚠️ 排行榜需联网查看<br><small>请确认后端服务已启动</small></div>';
+  }
+}
+
+function renderLeaderboard(lb,stats){
+  if(!lb.length){document.getElementById('lb-content').innerHTML='<div class="empty">暂无数据，快来第一个挑战吧！</div>';return;}
+  const podium=lb.slice(0,3);
+  const rest=lb.slice(3);
+  const ri=r=>rankInfo(r.score);
+  document.getElementById('lb-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;font-size:12px;color:var(--muted);text-align:center;padding:0 4px">
+      <div>参与人数<br><span style="color:var(--text);font-size:18px;font-weight:800">${stats.total||0}</span></div>
+      <div>平均得分<br><span style="color:var(--accent);font-size:18px;font-weight:800">${stats.avgScore||0}</span></div>
+      <div>满分人数<br><span style="color:var(--gold);font-size:18px;font-weight:800">${stats.perfectCount||0}</span></div>
+    </div>
+    <div class="lb-podium" style="display:${podium.length>=2?'grid':'block'}">
+      ${podium[1]?`<div class="pod second"><div class="pod-rank">🥈</div><div class="pod-name">${podium[1].nickname}</div><div class="pod-score">${podium[1].score}</div><div class="pod-title">${ri(podium[1]).title}</div></div>`:''}
+      ${podium[0]?`<div class="pod first"><div class="pod-rank">🥇</div><div class="pod-name">${podium[0].nickname}</div><div class="pod-score">${podium[0].score}</div><div class="pod-title">${ri(podium[0]).title}</div></div>`:''}
+      ${podium[2]?`<div class="pod third"><div class="pod-rank">🥉</div><div class="pod-name">${podium[2].nickname}</div><div class="pod-score">${podium[2].score}</div><div class="pod-title">${ri(podium[2]).title}</div></div>`:''}
+    </div>
+    <div class="lb-list">
+      ${rest.map(r=>`
+        <div class="lb-row">
+          <div class="lb-rank">${r.rank}</div>
+          <div class="lb-name">${r.nickname}</div>
+          <span class="lb-badge">${ri(r).title}</span>
+          <div class="lb-score">${r.score}<span style="font-size:11px;color:var(--muted)">/30</span></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── Event bindings ─────────────────────────────────────────
+document.getElementById('btn-start').onclick=startQuiz;
+document.getElementById('nick-input').addEventListener('keydown',e=>{if(e.key==='Enter')startQuiz();});
+document.getElementById('btn-next').onclick=()=>{if(state.currentQ<state.questions.length-1){state.currentQ++;renderNav();renderQuestion();}};
+document.getElementById('btn-prev').onclick=()=>{if(state.currentQ>0){state.currentQ--;renderNav();renderQuestion();}};
+document.getElementById('btn-finish').onclick=()=>{
+  const unanswered=state.questions.length-Object.keys(state.answers).length;
+  if(unanswered>0&&!confirm(`还有 ${unanswered} 题未作答，确认提交？`))return;
+  submitQuiz();
+};
+document.getElementById('btn-retry').onclick=()=>{state.answers={};showScreen('start');document.getElementById('tab-bar').style.display='none';};
+document.getElementById('btn-to-lb').onclick=()=>{loadLeaderboard();showScreen('lb');};
+document.getElementById('btn-to-lb2').onclick=()=>{loadLeaderboard();showScreen('lb');};
+document.getElementById('btn-lb-back').onclick=()=>{showScreen(state.result?'result':'start');};
+
+// ── Fallback questions (works without backend) ─────────────
+const FALLBACK_QUESTIONS=[{"id":"Q01","category":"词汇","question":"What is the synonym of 'happy'?","options":["Sad","Joyful","Angry","Tired"]},{"id":"Q02","category":"语法","question":"She ___ to school every day.","options":["go","going","goes","gone"]},{"id":"Q03","category":"词汇","question":"Which word means the opposite of 'ancient'?","options":["Old","Modern","Historic","Classic"]},{"id":"Q04","category":"语法","question":"I have been waiting ___ two hours.","options":["since","for","during","while"]},{"id":"Q05","category":"文化","question":"Which country has English as an official language?","options":["Brazil","France","Australia","Germany"]},{"id":"Q06","category":"词汇","question":"What does 'enormous' mean?","options":["Very small","Very large","Very fast","Very quiet"]},{"id":"Q07","category":"语法","question":"Neither Tom nor his friends ___ attending.","options":["is","are","was","were"]},{"id":"Q08","category":"词汇","question":"The word 'benevolent' means:","options":["Cruel","Kind and generous","Shy","Intelligent"]},{"id":"Q09","category":"阅读","question":"'Under the weather' means a person is:","options":["Outdoors","Feeling ill","Very happy","Working hard"]},{"id":"Q10","category":"语法","question":"By the time she arrived, we ___ dinner.","options":["finished","had finished","have finished","finish"]},{"id":"Q11","category":"词汇","question":"What is a 'peninsula'?","options":["A small island","Land nearly surrounded by water","A mountain range","A deep valley"]},{"id":"Q12","category":"文化","question":"Who wrote 'Romeo and Juliet'?","options":["Charles Dickens","William Shakespeare","Jane Austen","Mark Twain"]},{"id":"Q13","category":"语法","question":"___ you mind opening the window?","options":["Will","Shall","Would","Should"]},{"id":"Q14","category":"词汇","question":"'Lethargic' describes someone who is:","options":["Energetic","Sluggish and tired","Excited","Curious"]},{"id":"Q15","category":"阅读","question":"'It's raining cats and dogs' means:","options":["Pets are outside","It is raining heavily","Animals are scared","The weather is nice"]},{"id":"Q16","category":"语法","question":"He suggested ___ to the cinema.","options":["go","to go","going","gone"]},{"id":"Q17","category":"文化","question":"What is the most popular traditional sport in England?","options":["Baseball","Cricket","Basketball","Ice hockey"]},{"id":"Q18","category":"词汇","question":"What does 'omnivore' eat?","options":["Only plants","Only meat","Both plants and meat","Neither"]},{"id":"Q19","category":"语法","question":"This is the place ___ I was born.","options":["which","who","where","when"]},{"id":"Q20","category":"词汇","question":"'Verbose' means:","options":["Silent","Using too many words","Brief","Colorful"]},{"id":"Q21","category":"阅读","question":"'Break a leg' is used to wish someone:","options":["A warning","Good luck","An injury","Sadness"]},{"id":"Q22","category":"语法","question":"She is taller than ___ in her class.","options":["anyone","anyone else","no one","everyone"]},{"id":"Q23","category":"文化","question":"Thanksgiving is mainly celebrated in which country?","options":["UK","Australia","USA","New Zealand"]},{"id":"Q24","category":"词汇","question":"'Ephemeral' means:","options":["Lasting forever","Lasting a very short time","Very powerful","Very large"]},{"id":"Q25","category":"语法","question":"___ is known that exercise is good for health.","options":["This","That","It","There"]},{"id":"Q26","category":"阅读","question":"'Bite off more than you can chew' means to:","options":["Be very hungry","Take on too much","Be very greedy","Eat quickly"]},{"id":"Q27","category":"词汇","question":"What does 'philanthropist' mean?","options":["Someone who hates people","A generous person who helps others","A philosopher","A scientist"]},{"id":"Q28","category":"语法","question":"Had I known earlier, I ___ helped.","options":["will have","would have","should","must have"]},{"id":"Q29","category":"文化","question":"What does 'RSVP' mean on an invitation?","options":["Reply soon very please","Please respond (from French)","Reserve space promptly","Request simple verbal promise"]},{"id":"Q30","category":"词汇","question":"'Ambiguous' means:","options":["Very clear","Open to more than one interpretation","Ambitious","Friendly"]}];
+
+// ── Init ───────────────────────────────────────────────────
+loadQuestions();
+</script>
+</body>
+</html>

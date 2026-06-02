@@ -1,0 +1,4 @@
+node_modules/
+backend/data/submissions.json
+.DS_Store
+*.log
